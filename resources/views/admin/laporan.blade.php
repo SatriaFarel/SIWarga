@@ -90,13 +90,6 @@
                 </div>
 
                 <div class="p-5 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded">
-                    <p class="text-xs uppercase text-zinc-500">Warga Sudah Bayar</p>
-                    <p class="text-2xl font-semibold">
-                        {{ $sudahBayar }} / {{ $totalWarga }}
-                    </p>
-                </div>
-
-                <div class="p-5 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded">
                     <p class="text-xs uppercase text-zinc-500">Persentase</p>
                     <p class="text-2xl font-semibold">
                         {{ $persentase }}%

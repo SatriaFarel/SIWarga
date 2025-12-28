@@ -4,24 +4,36 @@ namespace App\Http\Controllers;
 
 use App\Models\Agenda;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 class AgendaController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display agenda list (Admin)
+     *
+     * Features:
+     * - Search by Judul or Deskripsi
+     * - Pagination
+     * - Ordered by Judul
      */
     public function index(Request $request)
     {
         $query = Agenda::query();
 
-        // search nama / NIK
+        /**
+         * Search agenda
+         * Keyword will match Judul or Deskripsi
+         */
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('Judul', 'like', '%' . $request->search . '%')
-                    ->orWhere('Deskripsi', 'like', '%' . $request->search . '%');
+                  ->orWhere('Deskripsi', 'like', '%' . $request->search . '%');
             });
         }
 
+        /**
+         * Paginate agenda data
+         */
         $agenda = $query
             ->orderBy('Judul')
             ->paginate(9)
@@ -31,7 +43,7 @@ class AgendaController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show create agenda form
      */
     public function create()
     {
@@ -39,7 +51,11 @@ class AgendaController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store new agenda data
+     *
+     * Handle:
+     * - Validation
+     * - Image upload (optional)
      */
     public function store(Request $request)
     {
@@ -52,6 +68,21 @@ class AgendaController extends Controller
             'Gambar' => 'image|mimes:jpg,jpeg,png'
         ]);
 
+        /**
+         * Upload agenda image (if exists)
+         */
+        if ($request->hasFile('Gambar')) {
+            $file = $request->file('Gambar');
+            $namaFile = time() . '-' . $file->getClientOriginalName();
+
+            $file->move(public_path('assets/agenda'), $namaFile);
+
+            $data['Gambar'] = 'assets/agenda/' . $namaFile;
+        }
+
+        /**
+         * Save agenda data to database
+         */
         Agenda::create($request->all());
 
         return redirect()->route('agenda.index')
@@ -59,7 +90,7 @@ class AgendaController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display all agenda (Public page)
      */
     public function viewAllAgenda(Agenda $agenda)
     {
@@ -68,7 +99,7 @@ class AgendaController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show edit agenda form
      */
     public function edit(Agenda $agenda)
     {
@@ -76,7 +107,11 @@ class AgendaController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update agenda data
+     *
+     * Handle:
+     * - Validation
+     * - Replace image if new image uploaded
      */
     public function update(Request $request, Agenda $agenda)
     {
@@ -89,13 +124,35 @@ class AgendaController extends Controller
             'Gambar' => 'image|mimes:jpg,jpeg,png'
         ]);
 
-        // UPDATE data (ini poin penting)
+        /**
+         * If new image uploaded
+         * - Delete old image
+         * - Upload new image
+         */
+        if ($request->hasFile('Gambar')) {
+
+            if ($agenda->Gambar && File::exists(public_path($agenda->Gambar))) {
+                File::delete(public_path($agenda->Gambar));
+            }
+
+            $file = $request->file('Gambar');
+            $namaFile = time() . '-' . $file->getClientOriginalName();
+
+            $file->move(public_path('assets/agenda'), $namaFile);
+
+            $data['Gambar'] = 'assets/agenda/' . $namaFile;
+        }
+
+        /**
+         * Update agenda fields
+         */
         $agenda->update([
             'Judul' => $request->Judul,
             'Deskripsi' => $request->Deskripsi,
             'Tanggal_Mulai' => $request->Tanggal_Mulai,
             'Tanggal_Selesai' => $request->Tanggal_Selesai,
             'Lokasi' => $request->Lokasi,
+            'Gamba' => $data['Gambar'] ?? null
         ]);
 
         return redirect()->route('agenda.index')
@@ -103,10 +160,16 @@ class AgendaController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete agenda data
+     *
+     * Also delete image file if exists
      */
     public function destroy(Agenda $agenda)
     {
+        if ($agenda->Gambar && File::exists(public_path($agenda->Gambar))) {
+            File::delete(public_path($agenda->Gambar));
+        }
+
         $agenda->delete();
 
         return redirect()->route('agenda.index')

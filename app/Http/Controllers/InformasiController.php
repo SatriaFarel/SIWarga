@@ -8,31 +8,47 @@ use App\Models\Informasi;
 class InformasiController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display informasi list (Admin)
+     *
+     * Features:
+     * - Search by Judul or Ringkasan
+     * - Filter by Is_penting
+     * - Pagination
      */
     public function index(Request $request)
     {
         $query = Informasi::query();
 
-        // search judul / ringkasan
+        /**
+         * Search informasi
+         * Keyword matched to Judul or Ringkasan
+         */
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('Judul', 'like', '%' . $request->search . '%')->orWhere('Ringkasan', 'like', '%' . $request->search . '%');
+                $q->where('Judul', 'like', '%' . $request->search . '%')
+                  ->orWhere('Ringkasan', 'like', '%' . $request->search . '%');
             });
         }
 
-        // filter jenis kelamin
+        /**
+         * Filter by importance flag
+         * Is_penting = 1 (important), 0 (normal)
+         */
         if ($request->filled('Is_penting')) {
             $query->where('Is_penting', $request->Is_penting);
         }
 
-        $informasi = $query->orderBy('created_at')->paginate(9)->withQueryString();
+        // Paginated informasi data
+        $informasi = $query
+            ->orderBy('created_at')
+            ->paginate(9)
+            ->withQueryString();
 
         return view('admin.informasi', compact('informasi'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show create informasi form
      */
     public function create()
     {
@@ -40,65 +56,91 @@ class InformasiController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store new informasi data
+     *
+     * Handle:
+     * - Validation
+     * - Boolean handling for Is_penting
      */
     public function store(Request $request)
     {
         $request->validate([
-            'Judul' => 'required',
-            'Ringkasan' => 'required',
-            'Isi' => 'required',
-            'Is_penting' => 'nullable|boolean',
+            'Judul'       => 'required',
+            'Ringkasan'   => 'required',
+            'Isi'         => 'required',
+            'Is_penting'  => 'nullable|boolean',
         ]);
 
+        /**
+         * Save informasi data
+         * Checkbox Is_penting handled as boolean
+         */
         Informasi::create([
-            'Judul' => $request->Judul,
-            'Ringkasan' => $request->Ringkasan,
-            'Isi' => $request->Isi,
+            'Judul'      => $request->Judul,
+            'Ringkasan'  => $request->Ringkasan,
+            'Isi'        => $request->Isi,
             'Is_penting' => $request->has('Is_penting') ? 1 : 0,
         ]);
 
-        return redirect()->route('informasi.index')->with('success', 'Data informasi berhasil ditambahkan');
+        return redirect()
+            ->route('informasi.index')
+            ->with('success', 'Data informasi berhasil ditambahkan');
     }
 
+    /**
+     * Show edit informasi form
+     */
     public function edit(Informasi $informasi)
     {
         return view('admin.form.informasiForm', compact('informasi'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update informasi data
+     *
+     * Handle:
+     * - Validation
+     * - Update boolean Is_penting
      */
     public function update(Request $request, Informasi $informasi)
     {
         $request->validate([
-            'Judul' => 'required',
-            'Ringkasan' => 'required',
-            'Isi' => 'required',
-            'Is_penting' => 'nullable|boolean',
+            'Judul'       => 'required',
+            'Ringkasan'   => 'required',
+            'Isi'         => 'required',
+            'Is_penting'  => 'nullable|boolean',
         ]);
 
-        // UPDATE data (ini poin penting)
+        /**
+         * Update informasi fields
+         */
         $informasi->update([
-            'Judul' => $request->Judul,
-            'Ringkasan' => $request->Ringkasan,
-            'Isi' => $request->Isi,
+            'Judul'      => $request->Judul,
+            'Ringkasan'  => $request->Ringkasan,
+            'Isi'        => $request->Isi,
             'Is_penting' => $request->has('Is_penting') ? 1 : 0,
         ]);
 
-        return redirect()->route('informasi.index')->with('success', 'Data informasi berhasil diperbarui');
+        return redirect()
+            ->route('informasi.index')
+            ->with('success', 'Data informasi berhasil diperbarui');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete informasi data
      */
     public function destroy(Informasi $informasi)
     {
         $informasi->delete();
 
-        return redirect()->route('informasi.index')->with('success', 'Data informasi berhasil dihapus');
+        return redirect()
+            ->route('informasi.index')
+            ->with('success', 'Data informasi berhasil dihapus');
     }
 
+    /**
+     * Display all informasi (Public page)
+     */
     public function viewAllInformasi()
     {
         $informasi = Informasi::latest()->get();

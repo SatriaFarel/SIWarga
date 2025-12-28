@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('Tanggal_Mulai');
             $table->date('Tanggal_Selesai');
             $table->string('Lokasi');
+            $table->string('Gambar')->nullable();
             $table->timestamps();
         });
     }

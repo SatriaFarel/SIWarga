@@ -11,55 +11,94 @@ use App\Models\PesanLaporan;
 
 class HomeController extends Controller
 {
+    /**
+     * Homepage Controller
+     *
+     * Handle data for public landing page (welcome page)
+     * Show latest informasi, agenda, artikel, and past activities.
+     */
     public function index()
     {
         return view('welcome', [
-            'informasi' => Informasi::latest()->take(3)->get(),
-            'agenda' => Agenda::orderBy('Tanggal_Mulai')->take(3)->get(),
-            'artikel' => Artikel::latest()->take(3)->get(),
-            'kegiatan' => Agenda::where('Tanggal_Selesai', '<', Carbon::today())->orderByDesc('Tanggal_Selesai')->take(3)->get(),
+            // Latest 3 informasi / announcements
+            'informasi' => Informasi::latest()
+                                    ->take(3)
+                                    ->get(),
+
+            // Upcoming agenda (sorted by start date)
+            'agenda' => Agenda::orderBy('Tanggal_Mulai')
+                              ->take(3)
+                              ->get(),
+
+            // Latest 3 articles
+            'artikel' => Artikel::latest()
+                                ->take(3)
+                                ->get(),
+
+            // Past activities (already finished)
+            'kegiatan' => Agenda::where('Tanggal_Selesai', '<', Carbon::today())
+                                ->orderByDesc('Tanggal_Selesai')
+                                ->take(3)
+                                ->get(),
         ]);
     }
 
+    /**
+     * Store pesan / laporan from public form
+     *
+     * Used by warga to send:
+     * - Laporan
+     * - Saran
+     * - Kritik
+     */
     public function store(Request $request)
     {
         $request->validate([
-            'Nama' => 'nullable|string|max:100',
+            'Nama'  => 'nullable|string|max:100',
             'Email' => 'required|string',
             'Jenis' => 'required|in:Laporan,Saran,Kritik',
             'Pesan' => 'required',
         ]);
 
+        /**
+         * Save pesan laporan
+         * Status will be set automatically (default: "baru")
+         */
         PesanLaporan::create([
-            'Nama' => $request->Nama,
+            'Nama'  => $request->Nama,
             'Email' => $request->Email,
             'Jenis' => $request->Jenis,
             'Pesan' => $request->Pesan,
-            // status otomatis "baru"
         ]);
 
         return back()->with('success', 'Pesan berhasil dikirim');
     }
 
-    // Menampilkan daftar pesan & laporan warga
+    /**
+     * Display pesan & laporan list (Admin)
+     *
+     * Features:
+     * - Ordered by newest
+     * - Pagination for performance
+     */
     public function view()
     {
-        // Ambil data terbaru, pagination biar ringan
-        $pesan = PesanLaporan::orderBy('created_at', 'desc')->paginate(9);
+        // Get latest messages with pagination
+        $pesan = PesanLaporan::orderBy('created_at', 'desc')
+                             ->paginate(9);
 
-        // Kirim ke view
         return view('admin.pesan', compact('pesan'));
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete pesan / laporan
      */
     public function destroy(PesanLaporan $pesan)
     {
         $pesan->delete();
 
-        return redirect()->route('pesan')->with('success', 'Data pesan berhasil dihapus');
+        return redirect()
+            ->route('pesan')
+            ->with('success', 'Data pesan berhasil dihapus');
     }
-
-
 }

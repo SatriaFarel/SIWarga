@@ -11,31 +11,41 @@ use App\Models\Informasi;
 class ArsipController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display list of arsip (Admin)
+     *
+     * Features:
+     * - Search by judul
+     * - Filter by kategori
+     * - Filter by akses
+     * - Pagination
      */
     public function index(Request $request)
     {
         $query = Arsip::query();
 
+        // Search by judul
         if ($request->search) {
             $query->where('judul', 'like', '%' . $request->search . '%');
         }
 
+        // Filter by kategori
         if ($request->kategori) {
             $query->where('kategori', $request->kategori);
         }
 
+        // Filter by akses (Admin / Publik)
         if ($request->akses) {
             $query->where('akses', $request->akses);
         }
 
+        // Latest arsip with pagination
         $arsip = $query->latest()->paginate(9);
 
         return view('admin.arsip', compact('arsip'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show create arsip form
      */
     public function create()
     {
@@ -43,65 +53,87 @@ class ArsipController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store new arsip data
+     *
+     * Handle:
+     * - Validation
+     * - File upload to storage (public disk)
+     * - Save metadata to database
      */
     public function store(Request $request)
     {
         $request->validate([
-            'judul' => 'required',
-            'kategori' => 'required',
+            'judul'           => 'required',
+            'kategori'        => 'required',
             'tanggal_dokumen' => 'required',
-            'file' => 'required|file|mimes:pdf,doc,docx|max:5120', // 5MB
+            'file'            => 'required|file|mimes:pdf,doc,docx|max:5120', // max 5MB
         ]);
 
+        // Store file to storage/app/public/arsip
         $file = $request->file('file');
         $path = $file->store('arsip', 'public');
 
+        // Save arsip data
         Arsip::create([
-            'judul' => $request->judul,
-            'kategori' => $request->kategori,
-            'tanggal_dokumen' => $request->tanggal_dokumen,
-            'nama_file' => $file->getClientOriginalName(),
-            'path_file' => $path,
-            'tipe_file' => $file->extension(),
-            'ukuran_file' => round($file->getSize() / 1024),
-            'akses' => $request->akses,
-            'uploaded_by' => auth()->id()
+            'judul'          => $request->judul,
+            'kategori'       => $request->kategori,
+            'tanggal_dokumen'=> $request->tanggal_dokumen,
+            'nama_file'      => $file->getClientOriginalName(),
+            'path_file'      => $path,
+            'tipe_file'      => $file->extension(),
+            'ukuran_file'    => round($file->getSize() / 1024), // KB
+            'akses'          => $request->akses,
+            'uploaded_by'    => auth()->id(),
         ]);
 
-        return redirect()->route('arsip.index')->with('success', 'Arsip ditambahkan');
+        return redirect()
+            ->route('arsip.index')
+            ->with('success', 'Arsip ditambahkan');
     }
 
+    /**
+     * Show edit arsip form
+     */
     public function edit(Arsip $arsip)
     {
         return view('admin.form.informasiForm', compact('arsip'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update arsip data
+     *
+     * Handle:
+     * - Update basic fields
+     * - Replace file if new file uploaded
      */
     public function update(Request $request, Arsip $arsip)
     {
         $request->validate([
-            'judul' => 'required',
-            'kategori' => 'required',
+            'judul'           => 'required',
+            'kategori'        => 'required',
             'tanggal_dokumen' => 'required',
-            'file' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'file'            => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
-        // Data dasar (selalu diupdate)
+        /**
+         * Base data (always updated)
+         */
         $data = [
-            'judul' => $request->judul,
-            'kategori' => $request->kategori,
+            'judul'           => $request->judul,
+            'kategori'        => $request->kategori,
             'tanggal_dokumen' => $request->tanggal_dokumen,
-            'akses' => $request->akses,
-            'uploaded_by' => auth()->id(),
+            'akses'           => $request->akses,
+            'uploaded_by'     => auth()->id(),
         ];
 
-        // ❗ Kalau ada file baru → update file
+        /**
+         * If new file uploaded:
+         * - Delete old file (if exists)
+         * - Store new file
+         * - Update file metadata
+         */
         if ($request->hasFile('file')) {
 
-            // (opsional tapi bagus) hapus file lama
             if ($arsip->path_file && Storage::disk('public')->exists($arsip->path_file)) {
                 Storage::disk('public')->delete($arsip->path_file);
             }
@@ -115,7 +147,7 @@ class ArsipController extends Controller
             $data['ukuran_file'] = round($file->getSize() / 1024);
         }
 
-        // Update sekali, rapi
+        // Single update call
         $arsip->update($data);
 
         return redirect()
@@ -124,28 +156,37 @@ class ArsipController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete arsip data
+     *
+     * Also delete file from storage
      */
     public function destroy(Arsip $arsip)
     {
-        // 1. Hapus file jika ada
         if ($arsip->path_file && Storage::disk('public')->exists($arsip->path_file)) {
             Storage::disk('public')->delete($arsip->path_file);
         }
+
         $arsip->delete();
 
-        return redirect()->route('arsip.index')->with('success', 'Data arsip berhasil dihapus');
+        return redirect()
+            ->route('arsip.index')
+            ->with('success', 'Data arsip berhasil dihapus');
     }
 
-
-
+    /**
+     * Download arsip file
+     *
+     * Access rule:
+     * - If akses = Admin → user must be logged in
+     */
     public function download(Arsip $arsip)
     {
-        // proteksi akses
+        // Access protection
         if ($arsip->akses === 'Admin' && !auth()->check()) {
             abort(403);
         }
 
+        // File existence check
         if (!Storage::disk('public')->exists($arsip->path_file)) {
             abort(404, 'File tidak ditemukan');
         }

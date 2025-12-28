@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Laporan Iuran Warga</title>
@@ -11,19 +12,54 @@
             color: #000;
             line-height: 1.5;
         }
-        .header { text-align: center; margin-bottom: 12px; }
-        .header h1 { font-size: 16px; margin: 0; text-transform: uppercase; }
-        .header p { margin: 2px 0; font-size: 12px; }
 
-        .line { border-top: 2px solid #000; margin: 8px 0 12px; }
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
 
-        .meta { margin-bottom: 12px; }
-        .meta table { width: 100%; font-size: 12px; }
-        .meta td { padding: 2px 0; }
+        .header h1 {
+            font-size: 16px;
+            margin: 0;
+            text-transform: uppercase;
+        }
 
-        .summary { margin: 12px 0; border: 1px solid #000; padding: 8px; }
-        .summary table { width: 100%; }
-        .summary td { padding: 4px; }
+        .header p {
+            margin: 2px 0;
+            font-size: 12px;
+        }
+
+        .line {
+            border-top: 2px solid #000;
+            margin: 8px 0 12px;
+        }
+
+        .meta {
+            margin-bottom: 12px;
+        }
+
+        .meta table {
+            width: 100%;
+            font-size: 12px;
+        }
+
+        .meta td {
+            padding: 2px 0;
+        }
+
+        .summary {
+            margin: 12px 0;
+            border: 1px solid #000;
+            padding: 8px;
+        }
+
+        .summary table {
+            width: 100%;
+        }
+
+        .summary td {
+            padding: 4px;
+        }
 
         table.data {
             width: 100%;
@@ -31,25 +67,38 @@
             margin-top: 10px;
             font-size: 12px;
         }
-        table.data th, table.data td {
+
+        table.data th,
+        table.data td {
             border: 1px solid #000;
             padding: 6px;
         }
+
         table.data th {
             text-align: center;
             background: #eaeaea;
         }
 
-        .footer { margin-top: 32px; width: 100%; }
-        .footer td { width: 50%; text-align: center; }
+        .footer {
+            margin-top: 32px;
+            width: 100%;
+        }
+
+        .footer td {
+            width: 50%;
+            text-align: center;
+        }
 
         @media print {
-            @page { size: A4; margin: 20mm; }
+            @page {
+                size: A4;
+                margin: 20mm;
+            }
         }
     </style>
 </head>
 
-<body onload="window.print()">
+<body onload="handlePrint()">
 
     <!-- HEADER -->
     <div class="header">
@@ -145,5 +194,21 @@
         </tr>
     </table>
 
+
+
+
+    <script>
+        function handlePrint() {
+            window.print();
+
+            // Setelah dialog print ditutup
+            window.onafterprint = function () {
+                window.history.back();
+            };
+        }
+    </script>
+
+
 </body>
+
 </html>

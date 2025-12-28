@@ -10,15 +10,22 @@ use Carbon\Carbon;
 
 class IuranController extends Controller
 {
-
-
+    /**
+     * Display iuran list (Admin)
+     *
+     * Handle:
+     * - Period selection (bulan & tahun)
+     * - Iuran activation logic
+     * - Generate iuran bulanan
+     * - Show status & bukti per warga
+     */
     public function index(Request $request)
     {
         $bulan = $request->bulan ?? date('m');
         $tahun = $request->tahun ?? date('Y');
 
         // ===============================
-        // KONFIGURASI MULAI IURAN
+        // IURAN START CONFIG
         // ===============================
         $startMonth = 11; // November
         $startYear  = 2025;
@@ -28,7 +35,7 @@ class IuranController extends Controller
             ($tahun == $startYear && $bulan >= $startMonth);
 
         // ===============================
-        // JIKA BELUM AKTIF → TIDAK ADA TAGIHAN
+        // NOT ACTIVE → NO BILLING
         // ===============================
         if (! $isAktif) {
             $warga = Warga::paginate(10);
@@ -42,10 +49,13 @@ class IuranController extends Controller
         }
 
         // ===============================
-        // SUDAH AKTIF → GENERATE IURAN
+        // ACTIVE → GENERATE IURAN
         // ===============================
         \App\Services\IuranService::generateBulanan($bulan, $tahun);
 
+        /**
+         * Get warga + iuran status per periode
+         */
         $warga = Warga::select('warga.*')
             ->selectSub(function ($q) use ($bulan, $tahun) {
                 $q->from('iuran')
@@ -81,37 +91,42 @@ class IuranController extends Controller
         ));
     }
 
-
+    /**
+     * Show bukti iuran detail
+     */
     public function showB($id)
     {
         $iuran = Iuran::with('warga')->findOrFail($id);
         return view('admin.iuranBukti', compact('iuran'));
     }
 
+    /**
+     * Approve iuran payment
+     */
     public function acc($id)
     {
         $iuran = Iuran::findOrFail($id);
-
         $iuran->Status = 'Lunas';
         $iuran->save();
 
         return back()->with('success', 'Iuran berhasil dikonfirmasi');
     }
 
+    /**
+     * Reject iuran payment
+     */
     public function tolak($id)
     {
         $iuran = Iuran::findOrFail($id);
-
         $iuran->Status = 'Belum Bayar';
-        $iuran->Bukti = null; // opsional, kalau mau hapus bukti
+        $iuran->Bukti  = null;
         $iuran->save();
 
         return back()->with('success', 'Pembayaran ditolak');
     }
 
-
     /**
-     * Show the form for creating a new resource.
+     * Warga payment (multi-month)
      */
     public function bayar(Request $request)
     {
@@ -122,7 +137,7 @@ class IuranController extends Controller
             'bukti_bayar' => 'required|image|max:2048'
         ]);
 
-        $totalBulan = (int) $request->total_bulan;
+        $totalBulan   = (int) $request->total_bulan;
         $totalNominal = $totalBulan * 20000;
 
         $path = $request->file('bukti_bayar')
@@ -133,7 +148,7 @@ class IuranController extends Controller
 
             Iuran::updateOrCreate(
                 [
-                    'Id_Warga' => $warga->id,
+                    'Id_Warga'      => $warga->id,
                     'Tanggal_Bayar' => $tanggal
                 ],
                 [
@@ -144,13 +159,16 @@ class IuranController extends Controller
         }
 
         return redirect()->route('iuran.struk')->with('struk', [
-            'nama' => $warga->Nama,
-            'bulan' => $totalBulan,
-            'total' => $totalNominal,
+            'nama'    => $warga->Nama,
+            'bulan'   => $totalBulan,
+            'total'   => $totalNominal,
             'tanggal' => now()->format('d M Y'),
         ]);
     }
 
+    /**
+     * Manual payment confirmation (Admin)
+     */
     public function bayarManual(Request $request, $wargaId)
     {
         $bulan = $request->bulan;
@@ -176,37 +194,43 @@ class IuranController extends Controller
         return back()->with('success', 'Iuran berhasil dikonfirmasi (manual).');
     }
 
+    /**
+     * Iuran report page
+     */
     public function laporan(Request $request)
     {
         $data = $this->getLaporanData($request);
-
         return view('admin.laporan', $data);
     }
+
+    /**
+     * Core report data logic
+     * Used by report & print
+     */
     private function getLaporanData(Request $request)
     {
         $bulan = (int) ($request->bulan ?? now()->month);
         $tahun = (int) ($request->tahun ?? now()->year);
 
-
-        $awalIuran = Carbon::create(2025, 11, 1);
+        $awalIuran    = Carbon::create(2025, 11, 1);
         $akhirPeriode = Carbon::create($tahun, $bulan, 1)->endOfMonth();
 
         $totalWarga = DB::table('warga')->count();
 
         if ($akhirPeriode->lt($awalIuran)) {
             return [
-                'bulan' => $bulan,
-                'tahun' => $tahun,
-                'totalWarga' => $totalWarga,
-                'sudahBayar' => 0,
-                'totalPemasukan' => 0,
-                'persentase' => 0,
-                'dataLaporan' => collect(),
-                'dataPrint' => collect(),
+                'bulan'            => $bulan,
+                'tahun'            => $tahun,
+                'totalWarga'       => $totalWarga,
+                'sudahBayar'       => 0,
+                'totalPemasukan'   => 0,
+                'persentase'       => 0,
+                'dataLaporan'      => collect(),
+                'dataPrint'        => collect(),
             ];
         }
 
-        // ===== Statistik =====
+        // ===== STATISTICS =====
         $sudahBayar = DB::table('iuran')
             ->where('Status', 'Lunas')
             ->whereBetween('Tanggal_Bayar', [$awalIuran, $akhirPeriode])
@@ -218,14 +242,14 @@ class IuranController extends Controller
             ->whereBetween('Tanggal_Bayar', [$awalIuran, $akhirPeriode])
             ->count();
 
-        $nominalIuran = 20000;
+        $nominalIuran   = 20000;
         $totalPemasukan = $totalTransaksi * $nominalIuran;
 
         $persentase = $totalWarga > 0
             ? round(($sudahBayar / $totalWarga) * 100)
             : 0;
 
-        // ===== DATA UNTUK HALAMAN LAPORAN =====
+        // ===== REPORT DATA =====
         $dataLaporan = DB::table('warga')
             ->leftJoin('iuran', function ($join) use ($awalIuran, $akhirPeriode) {
                 $join->on('warga.id', '=', 'iuran.Id_Warga')
@@ -247,17 +271,15 @@ class IuranController extends Controller
                 return $row;
             });
 
-
-        // ===== DATA UNTUK PRINT (LEBIH RINGKAS & SINKRON) =====
+        // ===== PRINT DATA =====
         $dataPrint = $dataLaporan->map(function ($row) {
             return (object) [
                 'nama'          => $row->nama,
                 'status'        => $row->status,
-                'total_bayar'   => $row->total_bayar,   // JUMLAH BAYAR (x)
-                'total_nominal' => $row->total_nominal, // UANG
+                'total_bayar'   => $row->total_bayar,
+                'total_nominal' => $row->total_nominal,
             ];
         });
-
 
         return compact(
             'bulan',
@@ -271,42 +293,12 @@ class IuranController extends Controller
         );
     }
 
-
+    /**
+     * Print iuran report
+     */
     public function print(Request $request)
     {
         $data = $this->getLaporanData($request);
-
         return view('admin.laporanPrint', $data);
     }
-
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request) {}
-
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Iuran $iuran) {}
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit() {}
-
-    /**
-     * Update the specified resource in storage.
-     */
-
-    public function update(Request $request,) {}
-
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy() {}
 }

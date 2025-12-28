@@ -13,17 +13,18 @@
                 ☰
             </a>
 
+            {{-- LOGO --}}
             <div class="w-9 h-9 rounded-md bg-indigo-700 text-white
                         flex items-center justify-center font-semibold">
-                RT
+                SI
             </div>
 
             <div class="hidden sm:block">
                 <p class="text-sm font-semibold leading-tight">
-                    Sistem Informasi RT
+                    SIWarga
                 </p>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                    Administrasi & Informasi Warga
+                    Sistem Informasi Warga
                 </p>
             </div>
         </div>
@@ -33,7 +34,7 @@
             <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}"
                  class="w-9 h-9 rounded-full" alt="avatar">
 
-            <div class="hidden sm:block text-right">
+            <div class="sm:block text-right">
                 <p class="text-sm font-medium">
                     {{ auth()->user()->name }}
                 </p>
@@ -45,3 +46,4 @@
 
     </div>
 </header>
+

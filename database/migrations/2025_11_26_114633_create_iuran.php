@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('Id_Warga')->constrained('warga')->cascadeOnDelete();
             $table->date('Tanggal_Bayar');
-            $table->integer('Bayar');
+            $table->enum('Status', ['Lunas', 'Belum Bayar', 'Menunggu Konfirmasi'])->default('Belum Bayar');
+            $table->string('Bukti')->nullable();
             $table->timestamps();
         });
     }
