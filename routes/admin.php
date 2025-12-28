@@ -16,8 +16,9 @@ use App\Http\Controllers\{
 |--------------------------------------------------------------------------
 | ADMIN AREA (AUTH)
 |--------------------------------------------------------------------------
+| SEMUA route /admin WAJIB login
+|--------------------------------------------------------------------------
 */
-
 Route::middleware('auth')->prefix('admin')->group(function () {
 
     Route::get('/dashboard', [AdminController::class, 'index'])
@@ -25,11 +26,15 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
     Route::resource('warga', WargaController::class);
 
-    Route::resource('artikel', ArtikelController::class)->except(['show']);
-    // PENTING: sekarang admin artikel di /admin/artikel
+    Route::resource('artikel', ArtikelController::class)
+        ->except(['show']);
 
-    Route::resource('agenda', AgendaController::class)->except(['show']);
-    Route::resource('informasi', InformasiController::class)->except(['show']);
+    Route::resource('agenda', AgendaController::class)
+        ->except(['show']);
+
+    Route::resource('informasi', InformasiController::class)
+        ->except(['show']);
+
     Route::resource('arsip', ArsipController::class);
 
     Route::resource('iuran', IuranController::class)
@@ -38,8 +43,31 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/iuran/bayar', [IuranController::class, 'bayar'])
         ->name('iuran.bayar');
 
+    // Pesan warga (ADMIN)
+    Route::get('/pesan', [HomeController::class, 'view'])
+        ->name('pesan');
+
     Route::delete('/pesan/{pesan}', [HomeController::class, 'destroy'])
         ->name('pesan.destroy');
+
+    // Iuran admin actions
+    Route::get('/iuran/{id}/bukti', [IuranController::class, 'showB'])
+        ->name('admin.iuran.showB');
+
+    Route::post('/iuran/{id}/acc', [IuranController::class, 'acc'])
+        ->name('admin.iuran.acc');
+
+    Route::post('/iuran/{id}/tolak', [IuranController::class, 'tolak'])
+        ->name('admin.iuran.tolak');
+
+    Route::post('/iuran/manual/{iuran}', [IuranController::class, 'bayarManual'])
+        ->name('admin.iuran.manual');
+
+    Route::get('/laporan-iuran', [IuranController::class, 'laporan'])
+        ->name('laporan.iuran');
+
+    Route::get('/laporan-iuran/print', [IuranController::class, 'print'])
+        ->name('laporan.print');
 });
 
 
@@ -47,11 +75,13 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 |--------------------------------------------------------------------------
 | PUBLIK AREA
 |--------------------------------------------------------------------------
+| YANG MEMANG DARI AWAL PUBLIK
+|--------------------------------------------------------------------------
 */
 
-// Pesan warga
-Route::get('/admin/pesan', [HomeController::class, 'view'])->name('pesan');
-Route::post('/pesan', [HomeController::class, 'store'])->name('pesan.store');
+// Pesan warga (kirim)
+Route::post('/pesan', [HomeController::class, 'store'])
+    ->name('pesan.store');
 
 // Artikel publik
 Route::get('/artikel', [ArtikelController::class, 'viewAllArtikel'])
@@ -62,9 +92,9 @@ Route::get('/artikel/{slug}', [ArtikelController::class, 'show'])
 
 Route::post('/artikel/gambar/upload', [ArtikelController::class, 'uploadGambar'])
     ->name('artikel.gambar.upload');
+
 Route::delete('/artikel/gambar/hapus', [ArtikelController::class, 'hapusGambar'])
     ->name('artikel.gambar.hapus');
-
 
 // Agenda publik
 Route::get('/agenda', [AgendaController::class, 'viewAllAgenda'])
@@ -77,22 +107,3 @@ Route::get('/informasi', [InformasiController::class, 'viewAllInformasi'])
 // Arsip publik
 Route::get('/arsip/{arsip}/download', [ArsipController::class, 'download'])
     ->name('arsip.download');
-
-// Iuran
-Route::get('/admin/iuran/{id}/bukti', [IuranController::class, 'showB'])
-    ->name('admin.iuran.showB');
-
-Route::post('/admin/iuran/{id}/acc', [IuranController::class, 'acc'])
-    ->name('admin.iuran.acc');
-
-Route::post('/admin/iuran/{id}/tolak', [IuranController::class, 'tolak'])
-    ->name('admin.iuran.tolak');
-
-Route::post('/iuran/manual/{iuran}', [IuranController::class, 'bayarManual'])
-    ->name('admin.iuran.manual');
-
-Route::get('/admin/laporan-iuran', [IuranController::class, 'laporan'])
-    ->name('laporan.iuran');
-
-Route::get('/laporan-iuran/print', [IuranController::class, 'print'])
-    ->name('laporan.print');

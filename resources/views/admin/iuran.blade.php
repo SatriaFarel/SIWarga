@@ -8,6 +8,19 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         .modal {
             display: none;
