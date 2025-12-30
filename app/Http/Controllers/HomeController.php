@@ -22,24 +22,24 @@ class HomeController extends Controller
         return view('welcome', [
             // Latest 3 informasi / announcements
             'informasi' => Informasi::latest()
-                                    ->take(3)
-                                    ->get(),
+                ->take(3)
+                ->get(),
 
             // Upcoming agenda (sorted by start date)
             'agenda' => Agenda::orderBy('Tanggal_Mulai')
-                              ->take(3)
-                              ->get(),
+                ->take(3)
+                ->get(),
 
             // Latest 3 articles
             'artikel' => Artikel::latest()
-                                ->take(3)
-                                ->get(),
+                ->take(3)
+                ->get(),
 
             // Past activities (already finished)
             'kegiatan' => Agenda::where('Tanggal_Selesai', '<', Carbon::today())
-                                ->orderByDesc('Tanggal_Selesai')
-                                ->take(3)
-                                ->get(),
+                ->orderByDesc('Tanggal_Selesai')
+                ->take(3)
+                ->get(),
         ]);
     }
 
@@ -85,7 +85,7 @@ class HomeController extends Controller
     {
         // Get latest messages with pagination
         $pesan = PesanLaporan::orderBy('created_at', 'desc')
-                             ->paginate(9);
+            ->paginate(9);
 
         return view('admin.pesan', compact('pesan'));
     }
@@ -100,5 +100,18 @@ class HomeController extends Controller
         return redirect()
             ->route('pesan')
             ->with('success', 'Data pesan berhasil dihapus');
+    }
+
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'id'     => 'required|exists:pesan_laporan,id',
+            'status' => 'required|in:Baru,Dibaca,Ditindaklanjuti',
+        ]);
+
+        PesanLaporan::where('id', $request->id)
+            ->update(['Status' => $request->status]);
+
+        return back()->with('success', 'Status pesan berhasil diperbarui');
     }
 }

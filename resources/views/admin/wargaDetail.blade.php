@@ -64,7 +64,7 @@
                     <div>
                         <p class="text-sm text-zinc-500">Status Iuran Bulan Ini</p>
 
-                        @if($warga->iuran_bulan_ini)
+                        @if($iuranBulanIni && $iuranBulanIni->Status === 'Lunas')
                             <p class="inline-block mt-1 px-3 py-1 text-xs rounded-full
                             bg-green-600 text-white">
                                 Sudah Bayar

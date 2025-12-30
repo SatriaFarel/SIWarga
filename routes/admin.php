@@ -11,6 +11,7 @@ use App\Http\Controllers\{
     HomeController,
     ArsipController
 };
+use Termwind\Components\Hr;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,7 +22,7 @@ use App\Http\Controllers\{
 */
 Route::middleware('auth')->prefix('admin')->group(function () {
 
-    Route::get('/dashboard', [AdminController::class, 'index'])
+    Route::get('/dashboard', [AdminController::class, 'show'])
         ->name('dashboard');
 
     Route::resource('warga', WargaController::class);
@@ -35,13 +36,17 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::resource('informasi', InformasiController::class)
         ->except(['show']);
 
+    Route::resource('admin', AdminController::class)
+    ->parameters(['admin' => 'user'])
+    ->except(['show']);
+
+    Route::get('/admin', [AdminController::class, 'index'])
+        ->name('admin.index');
+
     Route::resource('arsip', ArsipController::class);
 
     Route::resource('iuran', IuranController::class)
         ->except(['create']);
-
-    Route::post('/iuran/bayar', [IuranController::class, 'bayar'])
-        ->name('iuran.bayar');
 
     // Pesan warga (ADMIN)
     Route::get('/pesan', [HomeController::class, 'view'])
@@ -49,6 +54,10 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
     Route::delete('/pesan/{pesan}', [HomeController::class, 'destroy'])
         ->name('pesan.destroy');
+
+    Route::put('/pesan/status', [HomeController::class, 'updateStatus'])
+    ->name('pesan.updateStatus');
+
 
     // Iuran admin actions
     Route::get('/iuran/{id}/bukti', [IuranController::class, 'showB'])

@@ -26,8 +26,8 @@ SIDEBAR DESKTOP
 
             <a href="{{ route('dashboard') }}" class="block px-4 py-2 rounded-md
                {{ request()->routeIs('dashboard')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                 Dashboard
             </a>
         </div>
@@ -40,8 +40,8 @@ SIDEBAR DESKTOP
 
             <a href="{{ route('warga.index') }}" class="block px-4 py-2 rounded-md
                {{ request()->routeIs('warga.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                 Data Warga
             </a>
         </div>
@@ -54,46 +54,65 @@ SIDEBAR DESKTOP
 
             <a href="{{ route('artikel.index') }}" class="block px-4 py-2 rounded-md
                {{ request()->routeIs('artikel.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                 Artikel
             </a>
 
             <a href="{{ route('agenda.index') }}" class="block px-4 py-2 rounded-md
                {{ request()->routeIs('agenda.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                 Agenda
             </a>
 
             <a href="{{ route('informasi.index') }}" class="block px-4 py-2 rounded-md
                {{ request()->routeIs('informasi.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                 Informasi
             </a>
-        </div>
 
-        {{-- ADMIN --}}
-        <div class="space-y-1">
-            <p class="px-4 text-xs font-semibold text-zinc-400 uppercase">
-                Administrasi
-            </p>
-
-            <a href="{{ route('arsip.index') }}" class="block px-4 py-2 rounded-md
-               {{ request()->routeIs('arsip.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
-                Arsip Dokumen
-            </a>
-
-            <a href="{{ route('laporan.iuran') }}" class="block px-4 py-2 rounded-md
-               {{ request()->routeIs('laporan.iuran*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
-                Laporan Iuran
+            {{-- PESAN LAPORAN (ALL ROLE) --}}
+            <a href="{{ route('pesan') }}" class="block px-4 py-2 rounded-md
+               {{ request()->routeIs('pesan')
+                    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                Pesan Laporan
             </a>
         </div>
+
+        {{-- ADMIN (SUPER ADMIN ONLY) --}}
+        @auth
+        @if(auth()->user()->role === 'super_admin')
+            <div class="space-y-1">
+                <p class="px-4 text-xs font-semibold text-zinc-400 uppercase">
+                    Administrasi
+                </p>
+
+                <a href="{{ route('admin.index') }}" class="block px-4 py-2 rounded-md
+                   {{ request()->routeIs('admin.*')
+                        ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                    Kelola Admin
+                </a>
+
+                <a href="{{ route('arsip.index') }}" class="block px-4 py-2 rounded-md
+                   {{ request()->routeIs('arsip.*')
+                        ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                    Arsip Dokumen
+                </a>
+
+                <a href="{{ route('laporan.iuran') }}" class="block px-4 py-2 rounded-md
+                   {{ request()->routeIs('laporan.iuran*')
+                        ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                    Laporan Iuran
+                </a>
+            </div>
+        @endif
+        @endauth
 
         {{-- LOGOUT --}}
         <div class="pt-4 border-t border-zinc-200 dark:border-zinc-700">
@@ -141,8 +160,8 @@ SIDEBAR MOBILE (DRAWER)
 
                 <a href="{{ route('dashboard') }}" class="block px-3 py-2.5 rounded-md
                    {{ request()->routeIs('dashboard')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                        ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                     Dashboard
                 </a>
             </section>
@@ -156,8 +175,8 @@ SIDEBAR MOBILE (DRAWER)
 
                 <a href="{{ route('warga.index') }}" class="block px-3 py-2.5 rounded-md
                    {{ request()->routeIs('warga.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                        ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                     Data Warga
                 </a>
             </section>
@@ -171,47 +190,66 @@ SIDEBAR MOBILE (DRAWER)
 
                 <a href="{{ route('artikel.index') }}" class="block px-3 py-2.5 rounded-md
                    {{ request()->routeIs('artikel.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                        ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                     Artikel
                 </a>
 
                 <a href="{{ route('agenda.index') }}" class="block px-3 py-2.5 rounded-md
                    {{ request()->routeIs('agenda.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                        ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                     Agenda
                 </a>
 
                 <a href="{{ route('informasi.index') }}" class="block px-3 py-2.5 rounded-md
                    {{ request()->routeIs('informasi.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                        ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
                     Informasi
+                </a>
+
+                {{-- PESAN LAPORAN (ALL ROLE) --}}
+                <a href="{{ route('pesan') }}" class="block px-3 py-2.5 rounded-md
+                   {{ request()->routeIs('pesan.*')
+                        ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                    Pesan Laporan
                 </a>
             </section>
 
             {{-- ADMIN --}}
-            <section class="space-y-1">
-                <p class="px-3 text-[11px] font-semibold tracking-wider
-                          text-zinc-400 uppercase">
-                    Administrasi
-                </p>
+            @auth
+            @if(auth()->user()->role === 'super_admin')
+                <section class="space-y-1">
+                    <p class="px-3 text-[11px] font-semibold tracking-wider
+                              text-zinc-400 uppercase">
+                        Administrasi
+                    </p>
 
-                <a href="{{ route('arsip.index') }}" class="block px-3 py-2.5 rounded-md
-                   {{ request()->routeIs('arsip.*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
-                    Arsip Dokumen
-                </a>
+                    <a href="{{ route('admin.index') }}" class="block px-3 py-2.5 rounded-md
+                       {{ request()->routeIs('admin.*')
+                            ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                            : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                        Kelola Admin
+                    </a>
 
-                <a href="{{ route('laporan.iuran') }}" class="block px-3 py-2.5 rounded-md
-                   {{ request()->routeIs('laporan.iuran*')
-    ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
-    : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
-                    Laporan Iuran
-                </a>
-            </section>
+                    <a href="{{ route('arsip.index') }}" class="block px-3 py-2.5 rounded-md
+                       {{ request()->routeIs('arsip.*')
+                            ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                            : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                        Arsip Dokumen
+                    </a>
+
+                    <a href="{{ route('laporan.iuran') }}" class="block px-3 py-2.5 rounded-md
+                       {{ request()->routeIs('laporan.iuran*')
+                            ? 'bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-medium'
+                            : 'hover:bg-zinc-100 dark:hover:bg-zinc-700' }}">
+                        Laporan Iuran
+                    </a>
+                </section>
+            @endif
+            @endauth
 
             {{-- LOGOUT --}}
             <section class="pt-4 border-t border-zinc-200 dark:border-zinc-700">

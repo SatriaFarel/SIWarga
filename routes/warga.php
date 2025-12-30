@@ -80,3 +80,6 @@ Route::get('/warga/struk', function () {
     return view('warga.struk');
 
 })->name('iuran.struk');
+
+Route::post('/iuran/bayar', [IuranController::class, 'bayar'])
+        ->name('iuran.bayar');

@@ -31,7 +31,7 @@ class WargaController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('Nama', 'like', '%' . $request->search . '%')
-                  ->orWhere('NIK', 'like', '%' . $request->search . '%');
+                    ->orWhere('NIK', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -91,7 +91,19 @@ class WargaController extends Controller
      */
     public function show(Warga $warga)
     {
-        return view('admin.wargaDetail', compact('warga'));
+        $bulan = now()->month;
+        $tahun = now()->year;
+
+        // Ambil iuran bulan ini (kalau ada)
+        $iuranBulanIni = Iuran::where('Id_Warga', $warga->id)
+            ->whereMonth('Tanggal_Bayar', $bulan)
+            ->whereYear('Tanggal_Bayar', $tahun)
+            ->first();
+
+        return view('admin.wargaDetail', compact(
+            'warga',
+            'iuranBulanIni'
+        ));
     }
 
     /**
