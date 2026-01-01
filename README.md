@@ -101,19 +101,17 @@ Struktur mengikuti standar Laravel agar mudah dipahami dan dikembangkan.
 2. Install seluruh dependency Laravel  
    `composer install`
 
-3. Salin file environment dan generate application key  
-   `cp .env.example .env`  
-   `php artisan key:generate`
+3. Cek file env dan sesuaikan dengan lingkuangan anda
 
-4. Buat database baru (misalnya **siwarga**) lalu sesuaikan konfigurasi database di file `.env`
+5. Buat database baru (misalnya **siwarga**) lalu sesuaikan konfigurasi database di file `.env`
 
-5. Jalankan migrasi database  
+6. Jalankan migrasi database  
    `php artisan migrate`
 
-6. (Opsional) Jalankan seeder database  
+7. (Opsional) Jalankan seeder database  
    `php artisan db:seed`
 
-7. Jalankan server aplikasi  
+8. Jalankan server aplikasi  
    `php artisan serve`
 
 Aplikasi dapat diakses melalui browser pada alamat:  
